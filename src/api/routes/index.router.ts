@@ -190,6 +190,10 @@ router.get('/assets/*', (req, res) => {
   }
 });
 
+router.get('/health', (req, res) => {
+  res.status(HttpStatus.OK).json({ status: 'ok' });
+});
+
 router
   .use((req, res, next) => telemetry.collectTelemetry(req, res, next))
 

@@ -3,6 +3,7 @@ Baileys
 # compiled output
 /dist
 /node_modules
+openspec/
 
 /Docker/.env
 
@@ -46,3 +47,6 @@ lerna-debug.log*
 .tool-versions
 
 /prisma/migrations/*
+
+# K8s secrets script (contains passwords - never commit)
+k8s/create-secret.sh

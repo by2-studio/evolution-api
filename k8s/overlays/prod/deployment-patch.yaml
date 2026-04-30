@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evolution-api
+spec:
+  replicas: 1
+  template:
+    spec:
+      initContainers:
+        - name: migrations
+          image: ghcr.io/by2-studio/evolution-api:latest
+          envFrom:
+            - secretRef:
+                name: evolution-api-secrets
+      containers:
+        - name: api
+          image: ghcr.io/by2-studio/evolution-api:latest
+          envFrom:
+            - secretRef:
+                name: evolution-api-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"

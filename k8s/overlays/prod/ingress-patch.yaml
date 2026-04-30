@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: evolution-api
+spec:
+  tls:
+    - hosts:
+        - evolution.api.by2.com.br
+      secretName: evolution-api-tls
+  rules:
+    - host: evolution.api.by2.com.br
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: evolution-api
+                port:
+                  number: 80
