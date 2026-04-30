@@ -8,13 +8,13 @@ spec:
     spec:
       initContainers:
         - name: migrations
-          image: ghcr.io/by2-studio/evolution-api:latest
+          image: ghcr.io/by2-studio/evolution-api:3fca66ef8c2e0d7da30618818bc2976d0ba8c348
           envFrom:
             - secretRef:
                 name: evolution-api-secrets
       containers:
         - name: api
-          image: ghcr.io/by2-studio/evolution-api:latest
+          image: ghcr.io/by2-studio/evolution-api:3fca66ef8c2e0d7da30618818bc2976d0ba8c348
           envFrom:
             - secretRef:
                 name: evolution-api-secrets
