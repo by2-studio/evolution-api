@@ -55,7 +55,7 @@ COPY --from=builder /evolution/Docker ./Docker
 COPY --from=builder /evolution/runWithProvider.js ./runWithProvider.js
 COPY --from=builder /evolution/tsup.config.ts ./tsup.config.ts
 
-RUN mkdir -p /evolution/instances && chown -R appuser:appuser /evolution
+RUN mkdir -p /evolution/instances && chown -R appuser:appuser /evolution && chmod -R u+rwX /evolution
 
 ENV DOCKER_ENV=true
 

@@ -8,6 +8,8 @@ metadata:
 spec:
   replicas: 1
   revisionHistoryLimit: 2
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: evolution-api
@@ -18,6 +20,13 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-pull
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: evolution-api
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -30,19 +39,39 @@ spec:
           imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
-            - ". ./Docker/scripts/deploy_database.sh"
+            - |
+              echo "Deploying migrations for $DATABASE_PROVIDER"
+              echo "Database URL: $DATABASE_URL"
+              cp -r ./prisma/${DATABASE_PROVIDER}-migrations/. ./prisma/migrations/
+              if [ $? -ne 0 ]; then echo "Failed to copy migrations"; exit 1; fi
+              npx prisma migrate deploy --schema ./prisma/${DATABASE_PROVIDER}-schema.prisma
+              if [ $? -ne 0 ]; then echo "Migration failed"; exit 1; fi
+              echo "Migration succeeded"
           envFrom:
             - secretRef:
                 name: evolution-api-secrets
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - ALL
+          volumeMounts:
+            - name: prisma-migrations
+              mountPath: /evolution/prisma/migrations
       containers:
         - name: api
           image: ghcr.io/by2-studio/evolution-api:latest
           imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - "npm run start:prod"
           ports:
             - name: http
               containerPort: 8080
@@ -71,7 +100,7 @@ spec:
           resources:
             requests:
               memory: "256Mi"
-              cpu: "200m"
+              cpu: "100m"
             limits:
               memory: "1Gi"
               cpu: "1000m"
@@ -85,9 +114,13 @@ spec:
               mountPath: /evolution/instances
             - name: tmp
               mountPath: /tmp
+            - name: prisma-migrations
+              mountPath: /evolution/prisma/migrations
       volumes:
         - name: instances
           persistentVolumeClaim:
             claimName: evolution-api-instances
         - name: tmp
+          emptyDir: {}
+        - name: prisma-migrations
           emptyDir: {}

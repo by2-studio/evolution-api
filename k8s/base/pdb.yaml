@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: evolution-api-pdb
+  labels:
+    app.kubernetes.io/name: evolution-api
+    app.kubernetes.io/part-of: evolution-api
+spec:
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: evolution-api
